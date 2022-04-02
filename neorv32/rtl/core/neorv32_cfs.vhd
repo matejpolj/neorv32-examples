@@ -59,7 +59,6 @@ entity neorv32_cfs is
     data_i      : in  std_ulogic_vector(31 downto 0); -- data in
     data_o      : out std_ulogic_vector(31 downto 0); -- data out
     ack_o       : out std_ulogic; -- transfer acknowledge
-    err_o       : out std_ulogic; -- transfer error
     -- clock generator --
     clkgen_en_o : out std_ulogic; -- enable clock generator
     clkgen_i    : in  std_ulogic_vector(07 downto 0); -- "clock" inputs
@@ -101,13 +100,6 @@ begin
 
   -- NOTE: Do not modify the CFS base address or the CFS' occupied address space as this might cause access
   -- collisions with other modules.
-
-  -- This module provides an ERROR signal to signal a faulty access operation to the CPU.
-  -- It can be used to indicate an invalid access (for example to an unused CFS register address) or to signal
-  -- a faulty state (like "not operational yet"). The error signal can be checked be checked by the applications
-  -- "bus access fault" exception handler (provided by the system's BUSKEEPER module).
-  -- This signal may only be set when the module is actually accessed! Tie to zero if not explicitly used.
-  err_o <= '0';
 
 
   -- CFS Generics ---------------------------------------------------------------------------
@@ -174,10 +166,10 @@ begin
   -- Interrupt ------------------------------------------------------------------------------
   -- -------------------------------------------------------------------------------------------
   -- The CFS features a single interrupt signal, which is connected to the CPU's "fast interrupt" channel 1.
-  -- The interrupt is triggered by a one-shot rising edge. After triggering, the interrupt appears as "pending" in the CPU's mie register
-  -- ready to trigger execution of the according interrupt handler. The interrupt request signal should be triggered
-  -- whenever an interrupt condition is fulfilled. It is the task of the application to programmer to enable/clear the CFS interrupt
-  -- using the CPU's mie and mip registers when reuqired.
+  -- The interrupt is high-level-active. When set, the interrupt appears as "pending" in the CPU's mie register
+  -- ready to trigger execution of the according interrupt handler.
+  -- Once set, the irq_o signal **has to stay set** until explicitly acknowledged by the CPU
+  -- (for example by reading/writing from/to a specific CFS interface register address).
 
   irq_o <= '0'; -- not used for this minimal example
 

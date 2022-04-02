@@ -163,8 +163,8 @@ architecture neorv32_uart_rtl of neorv32_uart is
   -- access control --
   signal acc_en : std_ulogic; -- module access enable
   signal addr   : std_ulogic_vector(31 downto 0); -- access address
-  signal wren   : std_ulogic; -- word write enable
-  signal rden   : std_ulogic; -- read enable
+  signal wr_en  : std_ulogic; -- word write enable
+  signal rd_en  : std_ulogic; -- read enable
 
   -- clock generator --
   signal uart_clk : std_ulogic;
@@ -181,7 +181,6 @@ architecture neorv32_uart_rtl of neorv32_uart is
   type tx_engine_t is record
     state    : tx_state_t;
     busy     : std_ulogic;
-    done     : std_ulogic;
     bitcnt   : std_ulogic_vector(03 downto 0);
     sreg     : std_ulogic_vector(10 downto 0);
     baud_cnt : std_ulogic_vector(11 downto 0);
@@ -193,7 +192,6 @@ architecture neorv32_uart_rtl of neorv32_uart is
   type rx_state_t is (S_RX_IDLE, S_RX_RECEIVE);
   type rx_engine_t is record
     state    : rx_state_t;
-    done     : std_ulogic;
     sync     : std_ulogic_vector(04 downto 0);
     bitcnt   : std_ulogic_vector(03 downto 0);
     sreg     : std_ulogic_vector(09 downto 0);
@@ -229,13 +227,6 @@ architecture neorv32_uart_rtl of neorv32_uart is
   end record;
   signal rx_buffer : rx_buffer_t;
 
-  -- interrupt generator --
-  type irq_t is record
-    set : std_ulogic;
-    buf : std_ulogic_vector(1 downto 0);
-  end record;
-  signal rx_irq, tx_irq : irq_t;
-
 begin
 
   -- Sanity Checks --------------------------------------------------------------------------
@@ -250,8 +241,8 @@ begin
   -- -------------------------------------------------------------------------------------------
   acc_en <= '1' when (addr_i(hi_abb_c downto lo_abb_c) = uart_id_base_c(hi_abb_c downto lo_abb_c)) else '0';
   addr   <= uart_id_base_c(31 downto lo_abb_c) & addr_i(lo_abb_c-1 downto 2) & "00"; -- word aligned
-  wren   <= acc_en and wren_i;
-  rden   <= acc_en and rden_i;
+  wr_en  <= acc_en and wren_i;
+  rd_en  <= acc_en and rden_i;
 
 
   -- Read/Write Access ----------------------------------------------------------------------
@@ -260,10 +251,10 @@ begin
   begin
     if rising_edge(clk_i) then
       -- bus access acknowledge --
-      ack_o <= wren or rden;
+      ack_o <= wr_en or rd_en;
 
       -- write access --
-      if (wren = '1') then
+      if (wr_en = '1') then
         if (addr = uart_id_ctrl_addr_c) then
           ctrl <= (others => '0');
           ctrl(ctrl_baud11_c downto ctrl_baud00_c) <= data_i(ctrl_baud11_c downto ctrl_baud00_c);
@@ -280,7 +271,7 @@ begin
 
       -- read access --
       data_o <= (others => '0');
-      if (rden = '1') then
+      if (rd_en = '1') then
         if (addr = uart_id_ctrl_addr_c) then
           data_o(ctrl_baud11_c downto ctrl_baud00_c) <= ctrl(ctrl_baud11_c downto ctrl_baud00_c);
           data_o(ctrl_sim_en_c)                      <= ctrl(ctrl_sim_en_c);
@@ -355,7 +346,7 @@ begin
   tx_buffer.clear <= not ctrl(ctrl_en_c);
 
   -- write access --
-  tx_buffer.we    <= '1' when (wren = '1') and (addr = uart_id_rtx_addr_c) else '0';
+  tx_buffer.we    <= '1' when (wr_en = '1') and (addr = uart_id_rtx_addr_c) else '0';
   tx_buffer.wdata <= data_i;
 
 
@@ -365,9 +356,8 @@ begin
   begin
     if rising_edge(clk_i) then
       -- defaults --
-      uart_txd_o     <= '1'; -- keep TX line idle (=high) if waiting for permission to start sending (->CTS)
-      tx_buffer.re   <= '0';
-      tx_engine.done <= '0';
+      uart_txd_o   <= '1'; -- keep TX line idle (=high) if waiting for permission to start sending (->CTS)
+      tx_buffer.re <= '0';
 
       -- FSM --
       if (ctrl(ctrl_en_c) = '0') then -- disabled
@@ -418,7 +408,6 @@ begin
             end if;
             uart_txd_o <= tx_engine.sreg(0);
             if (or_reduce_f(tx_engine.bitcnt) = '0') then -- all bits send?
-              tx_engine.done  <= '1'; -- sending done
               tx_engine.state <= S_TX_IDLE;
             end if;
 
@@ -447,9 +436,6 @@ begin
       -- input synchronizer --
       rx_engine.sync <= uart_rxd_i & rx_engine.sync(rx_engine.sync'left downto 1);
 
-      -- default --
-      rx_engine.done <= '0';
-
       -- FSM --
       if (ctrl(ctrl_en_c) = '0') then -- disabled
         rx_engine.overr <= '0';
@@ -477,7 +463,6 @@ begin
               end if;
             end if;
             if (or_reduce_f(rx_engine.bitcnt) = '0') then -- all bits received?
-              rx_engine.done  <= '1'; -- receiving done
               rx_engine.state <= S_RX_IDLE;
             end if;
 
@@ -488,10 +473,10 @@ begin
         end case;
 
         -- overrun flag --
-        if (rden = '1') and (addr = uart_id_rtx_addr_c) then -- clear when reading data register
-          rx_engine.overr <= '0';
-        elsif (rx_buffer.we = '1') and (rx_buffer.free = '0') then -- write to full FIFO
+        if (rd_en = '1') and (addr = uart_id_rtx_addr_c) then -- clear when reading data register
           rx_engine.overr <= '1';
+        elsif (rx_buffer.we = '1') and (rx_buffer.free = '0') then -- write to full FIFO
+          rx_engine.overr <= '0';
         end if;
       end if;
     end if;
@@ -535,7 +520,7 @@ begin
   rx_buffer.wdata(8) <= ctrl(ctrl_pmode1_c) and (xor_reduce_f(rx_engine.sreg(8 downto 0)) xor ctrl(ctrl_pmode0_c)); -- parity error flag
   rx_buffer.wdata(9) <= not rx_engine.sreg(9); -- frame error flag: check stop bit (error if not set)
   rx_buffer.we <= '1' when (rx_engine.bitcnt = "0000") and (rx_engine.state = S_RX_RECEIVE) else '0'; -- RX complete
-  rx_buffer.re <= '1' when (rden = '1') and (addr = uart_id_rtx_addr_c) else '0';
+  rx_buffer.re <= '1' when (rd_en = '1') and (addr = uart_id_rtx_addr_c) else '0';
 
 
   -- Hardware Flow Control ------------------------------------------------------------------
@@ -553,41 +538,39 @@ begin
   end process flow_control_buffer;
 
 
-  -- Interrupt Generator --------------------------------------------------------------------
+  -- Interrupts -----------------------------------------------------------------------------
   -- -------------------------------------------------------------------------------------------
-  irq_type: process(ctrl, tx_buffer, rx_buffer, tx_engine.done)
-  begin
-    -- TX interrupt --
-    if (UART_TX_FIFO = 1) or (ctrl(ctrl_tx_irq_c) = '0') then
-      tx_irq.set <= tx_buffer.free and tx_engine.done; -- fire IRQ if FIFO is not full
-    else
-      tx_irq.set <= (not tx_buffer.half) and tx_engine.done; -- fire IRQ if FIFO is less than half-full
-    end if;
-    -- RX interrupt --
-    if (UART_RX_FIFO = 1) or (ctrl(ctrl_rx_irq_c) = '0') then
-      rx_irq.set <= rx_buffer.avail; -- fire IRQ if FIFO is not empty
-    else
-      rx_irq.set <= rx_buffer.half; -- fire IRQ if FIFO is at least half-full
-    end if;
-  end process irq_type;
-
-  -- interrupt edge detector --
-  irq_detect: process(clk_i)
+  irq_generator: process(clk_i)
   begin
     if rising_edge(clk_i) then
-      if (ctrl(ctrl_en_c) = '0') then
-        tx_irq.buf <= "00";
-        rx_irq.buf <= "00";
+      if (ctrl(ctrl_en_c) = '0') then -- no interrupts when disabled
+        irq_txd_o <= '0';
+        irq_rxd_o <= '0';
       else
-        tx_irq.buf <= tx_irq.buf(0) & tx_irq.set;
-        rx_irq.buf <= rx_irq.buf(0) & rx_irq.set;
+        -- TX interrupt --
+        if (UART_TX_FIFO = 1) then
+          irq_txd_o <= tx_buffer.free; -- fire IRQ if FIFO is not full
+        else
+          if (ctrl(ctrl_tx_irq_c) = '1') then
+            irq_txd_o <= not tx_buffer.half; -- fire IRQ if FIFO is less than half-full
+          else
+            irq_txd_o <= tx_buffer.free; -- fire IRQ if FIFO is not full
+          end if;
+        end if;
+
+        -- RX interrupt --
+        if (UART_RX_FIFO = 1) then
+          irq_rxd_o <= rx_buffer.avail; -- fire IRQ if FIFO is not empty
+        else
+          if (ctrl(ctrl_rx_irq_c) = '1') then
+            irq_rxd_o <= rx_buffer.half; -- fire IRQ if FIFO is at least half-full
+          else
+            irq_rxd_o <= rx_buffer.avail; -- fire IRQ is FIFO is not empty
+          end if;
+        end if;
       end if;
     end if;
-  end process irq_detect;
-
-  -- IRQ requests to CPU --
-  irq_txd_o <= '1' when (tx_irq.buf = "01") else '0';
-  irq_rxd_o <= '1' when (rx_irq.buf = "01") else '0';
+  end process irq_generator;
 
 
   -- SIMULATION Transmitter -----------------------------------------------------------------

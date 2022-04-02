@@ -1,14 +1,14 @@
-Analysis & Synthesis Status : Failed - Sat Apr  2 14:43:58 2022
+Analysis & Synthesis Status : Successful - Sat Apr  2 14:54:54 2022
 Quartus Prime Version : 20.1.1 Build 720 11/11/2020 SJ Lite Edition
 Revision Name : de0n-neorv32-sdram-direct
 Top-level Entity Name : top
 Family : Cyclone IV E
-Total logic elements : N/A until Partition Merge
-    Total combinational functions : N/A until Partition Merge
-    Dedicated logic registers : N/A until Partition Merge
-Total registers : N/A until Partition Merge
-Total pins : N/A until Partition Merge
-Total virtual pins : N/A until Partition Merge
-Total memory bits : N/A until Partition Merge
-Embedded Multiplier 9-bit elements : N/A until Partition Merge
-Total PLLs : N/A until Partition Merge
+Total logic elements : 6,952
+    Total combinational functions : 5,859
+    Dedicated logic registers : 3,288
+Total registers : 3288
+Total pins : 57
+Total virtual pins : 0
+Total memory bits : 427,008
+Embedded Multiplier 9-bit elements : 7
+Total PLLs : 1

@@ -1,5 +1,5 @@
 Fitter report for de0n-neorv32-sdram-direct
-Sat Apr  2 14:43:12 2022
+Sat Apr  2 14:55:38 2022
 Quartus Prime Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
 
 
@@ -75,7 +75,7 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Fitter Summary                                                                   ;
 +------------------------------------+---------------------------------------------+
-; Fitter Status                      ; Successful - Sat Apr  2 14:43:12 2022       ;
+; Fitter Status                      ; Successful - Sat Apr  2 14:55:37 2022       ;
 ; Quartus Prime Version              ; 20.1.1 Build 720 11/11/2020 SJ Lite Edition ;
 ; Revision Name                      ; de0n-neorv32-sdram-direct                   ;
 ; Top-level Entity Name              ; top                                         ;
@@ -167,9 +167,9 @@ https://fpgasoftware.intel.com/eula.
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   3.7%      ;
-;     Processor 3            ;   3.5%      ;
-;     Processor 4            ;   3.3%      ;
+;     Processor 2            ;   4.0%      ;
+;     Processor 3            ;   3.7%      ;
+;     Processor 4            ;   3.5%      ;
 +----------------------------+-------------+
 
 
@@ -1904,7 +1904,7 @@ Info (176235): Finished register packing
     Extra Info (176218): Packed 72 registers into blocks of type Embedded multiplier block
     Extra Info (176220): Created 36 register duplicates
 Warning (15064): PLL "pll_sys:inst_pll_sys|altpll:altpll_component|pll_sys_altpll:auto_generated|pll1" output port clk[1] feeds output pin "SDRAM_CLK~output" via non-dedicated routing -- jitter performance depends on switching rate of other design elements. Use PLL dedicated clock outputs to ensure jitter performance File: /mnt/5064E3264BEB0448/github/rubikscube/neorv32_sdram/neorv32-examples/de0-nano/test_prav_zvezan/de0n-neorv32-sdram-direct/hw/db/pll_sys_altpll.v Line: 51
-Info (171121): Fitter preparation operations ending: elapsed time is 00:00:07
+Info (171121): Fitter preparation operations ending: elapsed time is 00:00:06
 Info (14896): Fitter has disabled Advanced Physical Optimization because it is not supported for the current family.
 Info (170189): Fitter placement preparation operations beginning
 Info (170190): Fitter placement preparation operations ending: elapsed time is 00:00:02
@@ -1918,17 +1918,17 @@ Info (170199): The Fitter performed an Auto Fit compilation.  Optimizations were
     Info (170201): Optimizations that may affect the design's routability were skipped
     Info (170200): Optimizations that may affect the design's timing were skipped
 Info (170194): Fitter routing operations ending: elapsed time is 00:00:09
-Info (11888): Total time spent on timing analysis during the Fitter is 4.48 seconds.
+Info (11888): Total time spent on timing analysis during the Fitter is 4.62 seconds.
 Info (334003): Started post-fitting delay annotation
 Info (334004): Delay annotation completed successfully
 Info (334003): Started post-fitting delay annotation
 Info (334004): Delay annotation completed successfully
-Info (11218): Fitter post-fit operations ending: elapsed time is 00:00:03
+Info (11218): Fitter post-fit operations ending: elapsed time is 00:00:04
 Info (144001): Generated suppressed messages file /mnt/5064E3264BEB0448/github/rubikscube/neorv32_sdram/neorv32-examples/de0-nano/test_prav_zvezan/de0n-neorv32-sdram-direct/hw/output_files/de0n-neorv32-sdram-direct.fit.smsg
 Info: Quartus Prime Fitter was successful. 0 errors, 2 warnings
-    Info: Peak virtual memory: 1080 megabytes
-    Info: Processing ended: Sat Apr  2 14:43:13 2022
-    Info: Elapsed time: 00:00:47
+    Info: Peak virtual memory: 1082 megabytes
+    Info: Processing ended: Sat Apr  2 14:55:39 2022
+    Info: Elapsed time: 00:00:44
     Info: Total CPU time (on all processors): 00:01:08
 
 

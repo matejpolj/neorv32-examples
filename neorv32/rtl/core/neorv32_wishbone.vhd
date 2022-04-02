@@ -76,9 +76,7 @@ entity neorv32_wishbone is
     lock_i    : in  std_ulogic; -- exclusive access request
     ack_o     : out std_ulogic; -- transfer acknowledge
     err_o     : out std_ulogic; -- transfer error
-    tmo_o     : out std_ulogic; -- transfer timeout
     priv_i    : in  std_ulogic_vector(01 downto 0); -- current CPU privilege level
-    ext_o     : out std_ulogic; -- active external access
     -- wishbone interface --
     wb_tag_o  : out std_ulogic_vector(02 downto 0); -- request tag
     wb_adr_o  : out std_ulogic_vector(31 downto 0); -- address
@@ -117,8 +115,7 @@ architecture neorv32_wishbone_rtl of neorv32_wishbone is
     sel      : std_ulogic_vector(03 downto 0);
     ack      : std_ulogic;
     err      : std_ulogic;
-    tmo      : std_ulogic;
-    timeout  : std_ulogic_vector(index_size_f(BUS_TIMEOUT) downto 0);
+    timeout  : std_ulogic_vector(index_size_f(BUS_TIMEOUT)-1 downto 0);
     src      : std_ulogic;
     lock     : std_ulogic;
     priv     : std_ulogic_vector(01 downto 0);
@@ -142,7 +139,7 @@ begin
 
   -- bus timeout --
   assert not (BUS_TIMEOUT /= 0) report "NEORV32 PROCESSOR CONFIG NOTE: External Bus Interface - Implementing auto-timeout (" & integer'image(BUS_TIMEOUT) & " cycles)." severity note;
-  assert not (BUS_TIMEOUT  = 0) report "NEORV32 PROCESSOR CONFIG WARNING: External Bus Interface - Implementing NO auto-timeout (can cause permanent CPU stall!)." severity warning;
+  assert not (BUS_TIMEOUT  = 0) report "NEORV32 PROCESSOR CONFIG NOTE: External Bus Interface - Implementing no auto-timeout (can cause permanent CPU stall!)." severity note;
 
   -- endianness --
   assert not (BIG_ENDIAN = false) report "NEORV32 PROCESSOR CONFIG NOTE: External Bus Interface - Implementing LITTLE-endian byte order." severity note;
@@ -179,7 +176,6 @@ begin
       ctrl.timeout  <= (others => def_rst_val_c);
       ctrl.ack      <= def_rst_val_c;
       ctrl.err      <= def_rst_val_c;
-      ctrl.tmo      <= def_rst_val_c;
       ctrl.src      <= def_rst_val_c;
       ctrl.lock     <= def_rst_val_c;
       ctrl.priv     <= (others => def_rst_val_c);
@@ -189,8 +185,7 @@ begin
       ctrl.rdat     <= (others => '0'); -- required for internal output gating
       ctrl.ack      <= '0';
       ctrl.err      <= '0';
-      ctrl.tmo      <= '0';
-      ctrl.timeout  <= std_ulogic_vector(to_unsigned(BUS_TIMEOUT, index_size_f(BUS_TIMEOUT)+1));
+      ctrl.timeout  <= std_ulogic_vector(to_unsigned(BUS_TIMEOUT, index_size_f(BUS_TIMEOUT)));
 
       -- state machine --
       case ctrl.state is
@@ -218,11 +213,9 @@ begin
         when BUSY => -- transfer in progress
         -- ------------------------------------------------------------
           ctrl.rdat <= wb_dat_i;
-          if (wb_err_i = '1') then -- abnormal bus termination
+          if (wb_err_i = '1') or -- abnormal bus termination
+             ((timeout_en_c = true) and (or_reduce_f(ctrl.timeout) = '0')) then -- valid timeout
             ctrl.err   <= '1';
-            ctrl.state <= IDLE;
-          elsif (timeout_en_c = true) and (or_reduce_f(ctrl.timeout) = '0') then -- enabled timeout
-            ctrl.tmo   <= '1';
             ctrl.state <= IDLE;
           elsif (wb_ack_i = '1') then -- normal bus termination
             ctrl.ack   <= '1';
@@ -246,12 +239,9 @@ begin
   rdata_gated <= wb_dat_i when (ctrl.state = BUSY) else (others => '0'); -- CPU read data gate for "async" RX
   rdata       <= ctrl.rdat when (ASYNC_RX = false) else rdata_gated;
 
-  ext_o  <= '1' when (ctrl.state = BUSY) else '0'; -- active external access
-
   data_o <= rdata when (BIG_ENDIAN = false) else bswap32_f(rdata); -- endianness conversion
   ack_o  <= ctrl.ack when (ASYNC_RX = false) else ack_gated;
   err_o  <= ctrl.err;
-  tmo_o  <= ctrl.tmo;
 
   -- wishbone interface --
   wb_tag_o(0) <= '0' when (ctrl.priv = priv_mode_u_c) else '1'; -- unprivileged access when in user mode

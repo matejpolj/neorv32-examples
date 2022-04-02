@@ -3,7 +3,7 @@
 -- # ********************************************************************************************* #
 -- # Frame format: 8/16/24/32-bit receive/transmit data, always MSB first, 2 clock modes,          #
 -- # 8 pre-scaled clocks (derived from system clock), 8 dedicated chip-select lines (low-active).  #
--- # Interrupt: "transfer done"                                                                    #
+-- # Interrupt: SPI_transfer_done                                                                  #
 -- # ********************************************************************************************* #
 -- # BSD 3-Clause License                                                                          #
 -- #                                                                                               #
@@ -231,7 +231,6 @@ begin
 
       -- defaults --
       spi_sck_o <= ctrl(ctrl_cpol_c);
-      irq_o     <= '0';
 
       -- serial engine --
       rtx_engine.state(2) <= ctrl(ctrl_en_c);
@@ -265,8 +264,7 @@ begin
           if (spi_clk_en = '1') then
             rtx_engine.sreg <= rtx_engine.sreg(30 downto 0) & rtx_engine.sdi_sync(rtx_engine.sdi_sync'left);
             if (rtx_engine.bitcnt(5 downto 3) = rtx_engine.bytecnt) then -- all bits transferred?
-              irq_o <= '1'; -- interrupt!
-              rtx_engine.state(1 downto 0) <= "00"; -- transmission done
+              rtx_engine.state(1 downto 0) <= "00";
             else
               rtx_engine.state(1 downto 0) <= "10";
             end if;
@@ -282,6 +280,11 @@ begin
 
   -- busy flag --
   rtx_engine.busy <= '0' when (rtx_engine.state(1 downto 0) = "00") else '1';
+
+
+  -- Interrupt ------------------------------------------------------------------------------
+  -- -------------------------------------------------------------------------------------------
+  irq_o <= '1' when (rtx_engine.state = "100") else '0'; -- fire IRQ if transceiver idle and enabled
 
 
 end neorv32_spi_rtl;

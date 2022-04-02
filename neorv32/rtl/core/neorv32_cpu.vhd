@@ -156,7 +156,6 @@ architecture neorv32_cpu_rtl of neorv32_cpu is
   signal be_store   : std_ulogic; -- bus error on store data access
   signal fetch_pc   : std_ulogic_vector(data_width_c-1 downto 0); -- pc for instruction fetch
   signal curr_pc    : std_ulogic_vector(data_width_c-1 downto 0); -- current pc (for current executed instruction)
-  signal next_pc    : std_ulogic_vector(data_width_c-1 downto 0); -- next pc (for next executed instruction)
   signal fpu_flags  : std_ulogic_vector(4 downto 0); -- FPU exception flags
 
   -- pmp interface --
@@ -286,7 +285,6 @@ begin
     imm_o         => imm,         -- immediate
     fetch_pc_o    => fetch_pc,    -- PC for instruction fetch
     curr_pc_o     => curr_pc,     -- current PC (corresponding to current instruction)
-    next_pc_o     => next_pc,     -- next PC (corresponding to next instruction)
     csr_rdata_o   => csr_rdata,   -- CSR read data
     -- FPU interface --
     fpu_flags_i   => fpu_flags,   -- exception flags
@@ -357,8 +355,7 @@ begin
     -- data input --
     rs1_i       => rs1,           -- rf source 1
     rs2_i       => rs2,           -- rf source 2
-    pc_i        => curr_pc,       -- current PC
-    pc2_i       => next_pc,       -- next PC
+    pc2_i       => curr_pc,       -- delayed PC
     imm_i       => imm,           -- immediate
     csr_i       => csr_rdata,     -- CSR read data
     -- data output --
