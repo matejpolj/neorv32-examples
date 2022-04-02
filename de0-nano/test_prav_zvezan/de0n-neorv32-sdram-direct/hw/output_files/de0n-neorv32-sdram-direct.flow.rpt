@@ -1,5 +1,5 @@
 Flow report for de0n-neorv32-sdram-direct
-Fri Apr  1 11:45:46 2022
+Sat Apr  2 14:43:58 2022
 Quartus Prime Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
 
 
@@ -41,22 +41,22 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Flow Summary                                                                     ;
 +------------------------------------+---------------------------------------------+
-; Flow Status                        ; Successful - Fri Apr  1 11:45:41 2022       ;
+; Flow Status                        ; Flow Failed - Sat Apr  2 14:43:58 2022      ;
 ; Quartus Prime Version              ; 20.1.1 Build 720 11/11/2020 SJ Lite Edition ;
 ; Revision Name                      ; de0n-neorv32-sdram-direct                   ;
 ; Top-level Entity Name              ; top                                         ;
 ; Family                             ; Cyclone IV E                                ;
 ; Device                             ; EP4CE22F17C6                                ;
 ; Timing Models                      ; Final                                       ;
-; Total logic elements               ; 4,893 / 22,320 ( 22 % )                     ;
-;     Total combinational functions  ; 4,317 / 22,320 ( 19 % )                     ;
-;     Dedicated logic registers      ; 2,424 / 22,320 ( 11 % )                     ;
-; Total registers                    ; 2424                                        ;
-; Total pins                         ; 57 / 154 ( 37 % )                           ;
-; Total virtual pins                 ; 0                                           ;
-; Total memory bits                  ; 427,008 / 608,256 ( 70 % )                  ;
-; Embedded Multiplier 9-bit elements ; 0 / 132 ( 0 % )                             ;
-; Total PLLs                         ; 1 / 4 ( 25 % )                              ;
+; Total logic elements               ; N/A until Partition Merge                   ;
+;     Total combinational functions  ; N/A until Partition Merge                   ;
+;     Dedicated logic registers      ; N/A until Partition Merge                   ;
+; Total registers                    ; N/A until Partition Merge                   ;
+; Total pins                         ; N/A until Partition Merge                   ;
+; Total virtual pins                 ; N/A until Partition Merge                   ;
+; Total memory bits                  ; N/A until Partition Merge                   ;
+; Embedded Multiplier 9-bit elements ; N/A until Partition Merge                   ;
+; Total PLLs                         ; N/A until Partition Merge                   ;
 +------------------------------------+---------------------------------------------+
 
 
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------------+
 ; Option            ; Setting                   ;
 +-------------------+---------------------------+
-; Start date & time ; 04/01/2022 11:44:31       ;
+; Start date & time ; 04/02/2022 14:43:48       ;
 ; Main task         ; Compilation               ;
 ; Revision Name     ; de0n-neorv32-sdram-direct ;
 +-------------------+---------------------------+
@@ -76,7 +76,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------------------+-------------+------------+
 ; Assignment Name                     ; Value                                  ; Default Value             ; Entity Name ; Section Id ;
 +-------------------------------------+----------------------------------------+---------------------------+-------------+------------+
-; COMPILER_SIGNATURE_ID               ; 71126643906493.164880627124741         ; --                        ; --          ; --         ;
+; COMPILER_SIGNATURE_ID               ; 71126643906493.164890342848828         ; --                        ; --          ; --         ;
 ; MAX_CORE_JUNCTION_TEMP              ; 85                                     ; --                        ; --          ; --         ;
 ; MIN_CORE_JUNCTION_TEMP              ; 0                                      ; --                        ; --          ; --         ;
 ; MISC_FILE                           ; src/pll/pll_sys.cmp                    ; --                        ; --          ; --         ;
@@ -97,11 +97,8 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:25     ; 1.0                     ; 504 MB              ; 00:00:35                           ;
-; Fitter               ; 00:00:32     ; 1.1                     ; 1060 MB             ; 00:00:50                           ;
-; Assembler            ; 00:00:01     ; 1.0                     ; 369 MB              ; 00:00:01                           ;
-; Timing Analyzer      ; 00:00:04     ; 1.5                     ; 544 MB              ; 00:00:05                           ;
-; Total                ; 00:01:02     ; --                      ; --                  ; 00:01:31                           ;
+; Analysis & Synthesis ; 00:00:10     ; 1.0                     ; 443 MB              ; 00:00:19                           ;
+; Total                ; 00:00:10     ; --                      ; --                  ; 00:00:19                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -111,9 +108,6 @@ https://fpgasoftware.intel.com/eula.
 ; Module Name          ; Machine Hostname ; OS Name        ; OS Version ; Processor type ;
 +----------------------+------------------+----------------+------------+----------------+
 ; Analysis & Synthesis ; matej-desktop    ; Ubuntu 20.04.4 ; 20         ; x86_64         ;
-; Fitter               ; matej-desktop    ; Ubuntu 20.04.4 ; 20         ; x86_64         ;
-; Assembler            ; matej-desktop    ; Ubuntu 20.04.4 ; 20         ; x86_64         ;
-; Timing Analyzer      ; matej-desktop    ; Ubuntu 20.04.4 ; 20         ; x86_64         ;
 +----------------------+------------------+----------------+------------+----------------+
 
 
@@ -121,9 +115,6 @@ https://fpgasoftware.intel.com/eula.
 ; Flow Log ;
 ------------
 quartus_map --read_settings_files=on --write_settings_files=off de0n-neorv32-sdram-direct -c de0n-neorv32-sdram-direct
-quartus_fit --read_settings_files=off --write_settings_files=off de0n-neorv32-sdram-direct -c de0n-neorv32-sdram-direct
-quartus_asm --read_settings_files=off --write_settings_files=off de0n-neorv32-sdram-direct -c de0n-neorv32-sdram-direct
-quartus_sta de0n-neorv32-sdram-direct -c de0n-neorv32-sdram-direct
 
 
 
